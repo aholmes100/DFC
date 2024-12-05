@@ -1,0 +1,61 @@
+﻿@using DevForge_Connect.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@model DevForge_Connect.Entities.UserTeam
+@inject UserManager<ApplicationUser> _userManager;
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+@{
+
+    bool isCurrentlyLoggedInUser = _userManager.GetUserId(User) == @Model.UserId;
+
+    if (isCurrentlyLoggedInUser)
+    {
+        <h3 class="text-center">Are you sure you want to leave this team?</h3>
+    }
+    else
+    {
+        <h3 class="text-center">Are you sure you want to remove this user from the team?</h3>
+    }
+}
+<div>
+    <hr />
+    <dl class="row">
+
+        @if (!isCurrentlyLoggedInUser)
+        {
+            <div class="col-4"></div>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.User)
+            </dt>
+            <dd class="col-sm-2">
+                @Html.DisplayFor(model => model.User.Email)
+            </dd>
+            <div class="col-4"></div>
+        }
+        <div class="col-4"></div>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Team)
+        </dt>
+        <dd class="col-sm-2">
+            @Html.DisplayFor(model => model.Team.Name)
+        </dd>
+        <div class="col-4"></div>
+    </dl>
+    
+    <form asp-action="Delete" class="row">
+        <input type="hidden" asp-for="Id" />
+        
+        @if (isCurrentlyLoggedInUser)
+        {
+            <input type="submit" value="Leave" class="btn btn-danger" />
+        }
+        else
+        {
+            <input type="submit" value="Remove" class="btn btn-danger" />
+        }
+        <a asp-action="Details" asp-controller="Teams" asp-route-id="@Model.TeamId">Back to List</a>
+    </form>
+</div>

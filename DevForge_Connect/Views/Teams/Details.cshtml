@@ -1,0 +1,105 @@
+﻿@using System.ComponentModel
+@using DevForge_Connect.Entities
+@using DevForge_Connect.Entities.Identity
+@using DevForge_Connect.Services.TeamBuilder
+@using Microsoft.AspNetCore.Identity
+@model DevForge_Connect.Models.TeamDetailsVm
+@inject UserManager<ApplicationUser> _userManager
+@inject ITeamBuilder _teamBuilder
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1 class="text-primary">@Model.Name</h1>
+
+<hr/>
+
+<div class="row">
+    <div class="table-responsive col-8 border-end">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>
+                    Users
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var user in Model.UserTeams) {
+                <tr>
+                    <td class="align-items-center">
+                        @user.User.Email
+                    </td>
+                    <td>
+                        @{
+
+                            if (_userManager.GetUserId(User) == @user.UserId)
+                            {
+                                <a asp-action="Delete" asp-controller="UserTeams" asp-route-id="@user.Id" class="btn btn-danger">Leave Team</a>
+                            }
+                            else
+                            {
+                                if (await _teamBuilder.IsTeamLeader(_userManager.GetUserId(User), Model.Id) || await _userManager.IsInRoleAsync(await _userManager.GetUserAsync(User),"Admin"))
+                                {
+                                    <a asp-action="Delete" asp-controller="UserTeams" asp-route-id="@user.Id" class="btn btn-danger">Remove Member</a>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-4">
+        @{
+            await Html.RenderPartialAsync("_TeamInvitePartial", new TeamInvite()
+            {
+                TeamId = Model.Id,
+            });
+
+            <hr/>
+        }
+        <div class="row">
+            <h2>Pending Invites</h2>
+            <div class="table-responsive col-12 border-end">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>
+                            Recipient
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var invite in Model.pendingInvites) {
+                        <tr>
+                            <td class="align-items-center">
+                                @invite.User.Email
+                            </td>
+                            <td>
+                                @invite.Status.Description
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
